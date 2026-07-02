@@ -11,11 +11,13 @@ import SwiftData
 @Model
 class Option: Identifiable {
     
+    var id: UUID = UUID()
     var name: String
     var pros: [String]
     var cons: [String]
     
-    init(name: String, pros: [String], cons: [String]) {
+    init(id: UUID = UUID(), name: String, pros: [String], cons: [String]) {
+        self.id = id
         self.name = name
         self.pros = pros
         self.cons = cons
@@ -27,13 +29,15 @@ class Option: Identifiable {
 @Model
 class DecisionData: Identifiable {
     
+    var id: UUID = UUID()
     var name: String
     var options: [Option]
     var decided: Bool = false
     
     var decidedOption : Option? = nil
     
-    init(name: String, options: [Option], decided: Bool = false, decidedOption: Option? = nil) {
+    init(id: UUID = UUID(), name: String, options: [Option], decided: Bool = false, decidedOption: Option? = nil) {
+        self.id = id
         self.name = name
         self.options = options
         self.decided = decided

@@ -78,11 +78,101 @@ struct DecisionCard: View {
     }
 }
 
+struct OptionCard: View {
+    let option: Option
+    let isSelected: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text(option.name)
+                    .font(.headline)
+                Spacer()
+                if isSelected {
+                    HStack(spacing: 4) {
+                        Image(systemName: "checkmark")
+                        Text("Your pick")
+                    }
+                    .font(.caption.bold())
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(Color.green)
+                    .clipShape(Capsule())
+                }
+            }
+
+            ProsConsCard(
+                label: "PROS",
+                items: option.pros,
+                symbol: "plus",
+                tint: .green
+            )
+
+            ProsConsCard(
+                label: "CONS",
+                items: option.cons,
+                symbol: "minus",
+                tint: .red
+            )
+        }
+        .padding(16)
+        .background(Color(.systemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(isSelected ? Color.green : Color(.systemGray5), lineWidth: isSelected ? 2 : 1)
+        )
+        .shadow(color: .black.opacity(0.05), radius: 6, y: 2)
+    }
+}
+
+struct ProsConsCard: View {
+    var label: String
+    var items: [String]
+    var symbol: String
+    var tint: Color
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 6) {
+                Circle()
+                    .fill(tint)
+                    .frame(width: 6, height: 6)
+                Text(label)
+                    .font(.caption.bold())
+                    .foregroundColor(tint)
+            }
+
+            ForEach(items, id: \.self) { item in
+                HStack(spacing: 10) {
+                    Image(systemName: symbol)
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundColor(tint)
+                        .frame(width: 0, height: 20)
+                        .background(tint.opacity(0.15))
+                        .clipShape(Circle())
+                    Text(item)
+                        .font(.subheadline)
+                    Spacer()
+                }
+            }
+        }
+        .padding(11)
+        .background(tint.opacity(0.08))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+}
+
 #Preview {
     DecisionCard(decision: DecisionData(name: "Which university should I apply to?", options: [
         Option(name: "ITS", pros: ["pros1-opt1", "pros2-opt1"], cons: ["cons1-opt1", "cons2-opt1"]),
         Option(name: "ITB", pros: ["pros1-opt2", "pros2-opt2"], cons: ["cons1-opt2", "cons2-opt2"]),
     ]))
+    
+    let opt = Option(name: "ITB", pros: ["pros1-opt2", "pros2-opt2"], cons: ["cons1-opt2", "cons2-opt2"])
+    
+    opt.pros
     
     DecisionCard(decision: DecisionData(name: "Which university should I apply to?", options: [
         Option(name: "ITS", pros: ["pros1-opt1", "pros2-opt1"], cons: ["cons1-opt1", "cons2-opt1"]),

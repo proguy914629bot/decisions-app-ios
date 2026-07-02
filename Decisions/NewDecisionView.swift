@@ -26,6 +26,7 @@ struct NewDecisionView: View {
                             .lineLimit(1...3)
                             .padding()
                             .textFieldStyle(.plain)
+                            .autocorrectionDisabled()
                     }
                 }
                 .listSectionSeparator(.hidden)
@@ -41,6 +42,7 @@ struct NewDecisionView: View {
                                     .lineLimit(1...2)
                                     .padding()
                                     .textFieldStyle(.plain)
+                                    .autocorrectionDisabled()
                                 
                                 CardView()
                                     .frame(maxWidth: 325, minHeight: 100)

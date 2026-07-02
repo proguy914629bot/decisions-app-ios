@@ -8,9 +8,10 @@
 import SwiftUI
 
 struct DecisionCard: View {
-    
+
     var decision: DecisionData
-    
+    @State private var isShowingSheet = false
+
     var body: some View {
         if decision.decided {
             HStack(alignment: .center, spacing: 12) {
@@ -73,7 +74,11 @@ struct DecisionCard: View {
             .background(Color(.white))
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             .shadow(color: Color.black.opacity(0.15), radius: 10, x: 0, y: 5)
-            
+            .onTapGesture { isShowingSheet = true }
+            .sheet(isPresented: $isShowingSheet) {
+                DecisionPickView(decision: decision)
+            }
+
         }
     }
 }
@@ -169,10 +174,6 @@ struct ProsConsCard: View {
         Option(name: "ITS", pros: ["pros1-opt1", "pros2-opt1"], cons: ["cons1-opt1", "cons2-opt1"]),
         Option(name: "ITB", pros: ["pros1-opt2", "pros2-opt2"], cons: ["cons1-opt2", "cons2-opt2"]),
     ]))
-    
-    let opt = Option(name: "ITB", pros: ["pros1-opt2", "pros2-opt2"], cons: ["cons1-opt2", "cons2-opt2"])
-    
-    opt.pros
     
     DecisionCard(decision: DecisionData(name: "Which university should I apply to?", options: [
         Option(name: "ITS", pros: ["pros1-opt1", "pros2-opt1"], cons: ["cons1-opt1", "cons2-opt1"]),

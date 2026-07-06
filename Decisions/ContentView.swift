@@ -9,87 +9,79 @@ import SwiftUI
 import SwiftData
 
 struct ContentView: View {
-    
     @Environment(\.modelContext) private var context
-//    @Query private var decisions: [DecisionData]
-    @State private var isShowingSheet: Bool = false
-    
-    var decisions = [
-        DecisionData(name: "Which university should I apply to?", options: [
-            Option(name: "ITS", pros: ["pros1-opt1", "pros2-opt1"], cons: ["cons1-opt1", "cons2-opt1"]),
-            Option(name: "ITB", pros: ["pros1-opt2", "pros2-opt2"], cons: ["cons1-opt2", "cons2-opt2"]),
-        ]),
-        DecisionData(name: "Which university should I apply to?", options: [
-            Option(name: "ITS", pros: ["pros1-opt1", "pros2-opt1"], cons: ["cons1-opt1", "cons2-opt1"]),
-            Option(name: "ITB", pros: ["pros1-opt2", "pros2-opt2"], cons: ["cons1-opt2", "cons2-opt2"]),
-        ], decided: true, decidedOption: Option(name: "ITS", pros: ["pros1-opt1", "pros2-opt1"], cons: ["cons1-opt1", "cons2-opt1"])),
-        DecisionData(name: "Which university should I apply to?", options: [
-            Option(name: "ITS", pros: ["pros1-opt1", "pros2-opt1"], cons: ["cons1-opt1", "cons2-opt1"]),
-            Option(name: "ITB", pros: ["pros1-opt2", "pros2-opt2"], cons: ["cons1-opt2", "cons2-opt2"]),
-        ]),
-        DecisionData(name: "Which university should I apply to?", options: [
-            Option(name: "ITS", pros: ["pros1-opt1", "pros2-opt1"], cons: ["cons1-opt1", "cons2-opt1"]),
-            Option(name: "ITB", pros: ["pros1-opt2", "pros2-opt2"], cons: ["cons1-opt2", "cons2-opt2"]),
-        ], decided: true, decidedOption: Option(name: "ITS", pros: ["pros1-opt1", "pros2-opt1"], cons: ["cons1-opt1", "cons2-opt1"])),
-        DecisionData(name: "Which university should I apply to?", options: [
-            Option(name: "ITS", pros: ["pros1-opt1", "pros2-opt1"], cons: ["cons1-opt1", "cons2-opt1"]),
-            Option(name: "ITB", pros: ["pros1-opt2", "pros2-opt2"], cons: ["cons1-opt2", "cons2-opt2"]),
-        ], decided: true, decidedOption: Option(name: "ITS", pros: ["pros1-opt1", "pros2-opt1"], cons: ["cons1-opt1", "cons2-opt1"]))
-    ]
-    
+    @Query(sort: \DecisionData.createdAt, order: .reverse) private var decisions: [DecisionData]
+    @State private var isShowingNewDecision = false
+
+    private var inProgress: [DecisionData] { decisions.filter { !$0.decided } }
+    private var history: [DecisionData] { decisions.filter { $0.decided } }
+
     var body: some View {
-        NavigationSplitView {
-            List {
-                Section("In Progress") {
-                    ForEach(decisions.filter { $0.decided == false }) { decision in
-                        DecisionCard(decision: decision)
-                            .listRowBackground(Color.clear)
-                            .listRowSeparator(.hidden)
+        NavigationStack {
+            Group {
+                if decisions.isEmpty {
+                    ContentUnavailableView(
+                        "No Decisions Yet",
+                        systemImage: "",
+                        description: Text("Tap + to start weighing your options")
+                    )
+                } else {
+                    List {
+                        if !inProgress.isEmpty {
+                            Section("In Progress") {
+                                ForEach(inProgress) { decision in
+                                    DecisionCard(decision: decision)
+                                        .listRowBackground(Color.clear)
+                                        .listRowSeparator(.hidden)
+                                        .listRowInsets(.init(top: 4, leading: 16, bottom: 4, trailing: 16))
+                                }
+                                .onDelete { offsets in
+                                    delete(from: inProgress, at: offsets)
+                                }
+                            }
+                        }
+
+                        if !history.isEmpty {
+                            Section("History") {
+                                ForEach(history) { decision in
+                                    DecisionCard(decision: decision)
+                                        .listRowBackground(Color.clear)
+                                        .listRowSeparator(.hidden)
+                                        .listRowInsets(.init(top: 4, leading: 16, bottom: 4, trailing: 16))
+                                }
+                                .onDelete { offsets in
+                                    delete(from: history, at: offsets)
+                                }
+                            }
+                        }
                     }
-                }
-                Section("History") {
-                    ForEach(decisions.filter { $0.decided == true }) { decision in
-                        DecisionCard(decision: decision)
-                            .listRowBackground(Color.clear)
-                            .listRowSeparator(.hidden)
-                    }
+                    .listStyle(.plain)
+                    .scrollContentBackground(.hidden)
                 }
             }
-            .listStyle(.plain)
-            .scrollContentBackground(.hidden)
-            .navigationTitle(Text("Decisions"))
+            .navigationTitle("Decisions")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-                ToolbarItem {
-                    Button(action: addDecision) {
-                        Label("Add Decision", systemImage: "plus")
+                    Button(action: { isShowingNewDecision = true }) {
+                        Image(systemName: "plus")
+                            .fontWeight(.semibold)
                     }
                 }
             }
-            .sheet(isPresented: $isShowingSheet) {
+            .sheet(isPresented: $isShowingNewDecision) {
                 NewDecisionView()
             }
-        } detail: {
-            Text("Select a decision")
         }
     }
-    
-    private func addDecision() {
-        isShowingSheet = true
-    }
-    
-    private func deleteDecision(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                context.delete(decisions[index])
-            }
+
+    private func delete(from list: [DecisionData], at offsets: IndexSet) {
+        for i in offsets {
+            context.delete(list[i])
         }
     }
-    
 }
 
 #Preview {
     ContentView()
+        .modelContainer(for: DecisionData.self, inMemory: true)
 }
